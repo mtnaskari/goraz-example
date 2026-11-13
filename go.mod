@@ -7,7 +7,7 @@ toolchain go1.27.4
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/jackc/pgx/v5 v5.13.0
-	github.com/mtnaskari/goraz v0.1.2-0.20261113172809-2b195ffd94be
+	github.com/mtnaskari/goraz v0.2.0
 )
 
 require (
