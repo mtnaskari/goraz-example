@@ -1,0 +1,56 @@
+# Local stack: Postgres on port 55432 and the API on 8088, chosen so they don't clash
+# with a database already running on 5432. Run scripts/bootstrap.sh first.
+name: orders-example
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: orders
+      POSTGRES_DB: orders
+      POSTGRES_PASSWORD_FILE: /run/secrets/db-password
+    secrets:
+      - db-password
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "orders", "-d", "orders"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    # The key file on the host is owned by you with mode 0400, and file-backed Compose
+    # secrets keep that owner, so the service runs with your user and group IDs.
+    user: "${UID:?run scripts/bootstrap.sh, which sets UID and GID in .env}:${GID:?}"
+    environment:
+      ORDERS_DB: postgres://orders@db:5432/orders?sslmode=disable
+      ORDERS_VAULT: /etc/orders/orders.goraz
+      ORDERS_KEY_FILE: /run/secrets/goraz-key
+      ORDERS_TELEGRAM_CHAT: ${TELEGRAM_CHAT_ID:-}
+    # A directory, not a single file: a single-file bind mount keeps the old inode
+    # after an atomic replace, so the service would never see a new file.
+    volumes:
+      - ./deploy/vault:/etc/orders:ro
+    secrets:
+      - goraz-key
+    ports:
+      - "127.0.0.1:8088:8088"
+    depends_on:
+      db:
+        condition: service_healthy
+
+secrets:
+  goraz-key:
+    file: ./deploy/secrets/goraz-key
+  db-password:
+    file: ./deploy/secrets/db-password
+
+volumes:
+  db-data:
