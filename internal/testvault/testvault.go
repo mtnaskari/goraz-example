@@ -16,7 +16,8 @@ import (
 	"github.com/mtnaskari/goraz-example/internal/secrets"
 )
 
-// Values are the secrets a test vault holds.
+// Values are the secrets a test vault holds. They are fake, test-only values that
+// protect nothing; never reuse them.
 var Values = map[string]string{
 	secrets.DBPassword:    "db-password-for-tests",
 	secrets.JWTCurrentKey: "jwt-current-key-0123456789abcdef",
@@ -41,7 +42,7 @@ func New(t testing.TB) *Env {
 	t.Helper()
 	dir := t.TempDir()
 	main, _, err := vault.Create(filepath.Join(dir, "operator.goraz"), vault.CreateOptions{
-		Passphrase: []byte("violet granite ocean drift lantern"),
+		Passphrase: []byte("violet granite ocean drift lantern"), // Fake, test-only.
 		Profile:    vault.ProfileInteractive,
 		Options:    vault.Options{StateDir: filepath.Join(dir, "state")},
 	})

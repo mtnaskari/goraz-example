@@ -88,6 +88,14 @@ ORDERS_TEST_DB_PASSWORD="$(cat deploy/secrets/db-password)" \
 go test -tags integration ./internal/store
 ```
 
+## Secrets in this repository
+
+There are none. `scripts/bootstrap.sh` generates every real value on your machine, into `.operator/` and `deploy/`, which `.gitignore` keeps out of git.
+
+The only values committed are fake ones used by tests, in `internal/testvault`: strings such as `db-password-for-tests` and the passphrase `violet granite ocean drift lantern`. They exist only in temporary test folders and protect nothing. Don't reuse them.
+
+Keeping the operator passphrase in `.operator/passphrase` is a shortcut for this local example. A real operator types it.
+
 ## Clean up
 
 ```bash
